@@ -32,6 +32,7 @@
 *then*
 
 `$jest src/__tests__/your_test_file.js`
+`$jest src/__tests__/Login.js`
 
 **How to see test coverage:**
 

@@ -86,12 +86,16 @@ export default class {
   }
 
   handleEditTicket(e, bill, bills) {
-    if (this.counter === undefined || this.id !== bill.id) this.counter = 0
-    if (this.id === undefined || this.id !== bill.id) this.id = bill.id
+    console.log("test");
+    if (this.counter === undefined || this.id !== bill.id) 
+      this.counter = 0
+    if (this.id === undefined || this.id !== bill.id) 
+      this.id = bill.id
     if (this.counter % 2 === 0) {
       bills.forEach(b => {
         $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
       })
+      console.log(bill.id);
       $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
       $('.dashboard-right-container div').html(DashboardFormUI(bill))
       $('.vertical-navbar').css({ height: '150vh' })
@@ -130,9 +134,70 @@ export default class {
     this.onNavigate(ROUTES_PATH['Dashboard'])
   }
 
+  handleShowTickets(e, bills, index) {  
+    if (this.index === undefined || this.index !== index) 
+      this.index = index
+    
+    this.initStats(index);
+
+    if (this.updateStats(index)) {
+      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
+      $(`#status-bills-container${this.index}`)
+        .html(cards(filteredBills(bills, getStatus(this.index))))
+    } else {
+      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
+      $(`#status-bills-container${this.index}`)
+        .html("")
+    }
+
+
+    bills.forEach(bill => {
+      $(`#open-bill${bill.id}`).off("click");
+      $(`#open-bill${bill.id}`).on("click", ((e) => this.handleEditTicket(e, bill, bills)));
+    })
+    
+    return bills
+  }
+
+  // Added to have a cleaner opening/closing of categories
+  initStats(index){
+    if(this.active1 === undefined && index===1)
+      this.active1 = false;
+    else if(this.active2 === undefined && index===2)
+      this.active2 = false;
+    else if (this.active3 === undefined && index===3)
+      this.active3 = false;
+  }
+
+  updateStats(index){
+    if(index === 1)
+    {
+      this.active1 = !this.active1;
+      return this.active1;
+    }
+
+    else if(index===2)
+    {
+      this.active2 = !this.active2;
+      return this.active2;
+    }
+    else if(index===3)
+    {
+      this.active3 = !this.active3;
+      return this.active3;
+    }
+  }
+
+  // Original function
+  /*
   handleShowTickets(e, bills, index) {
-    if (this.counter === undefined || this.index !== index) this.counter = 0
-    if (this.index === undefined || this.index !== index) this.index = index
+    this.active = [];
+    this.active[index] = true;
+    console.log(this);
+    if (this.counter === undefined) 
+      this.counter = 0
+    if (this.index === undefined || this.index !== index) 
+      this.index = index
     if (this.counter % 2 === 0) {
       $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
       $(`#status-bills-container${this.index}`)
@@ -146,12 +211,12 @@ export default class {
     }
 
     bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+      $(`#open-bill${bill.id}`).on("click", ((e) => this.handleEditTicket(e, bill, bills)))
     })
-
+    
     return bills
-
   }
+*/
 
   // no need to cover this function by tests
   getBillsAllUsers = () => {
