@@ -8,6 +8,7 @@ export default (height) => {
     if (typeof user === 'string') {
       user = JSON.parse(user)
     }
+    
     if (user && user.type === 'Employee') {
       return (
         `

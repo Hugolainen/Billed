@@ -20,7 +20,18 @@ const row = (bill) => {
   }
 
 const rows = (data) => {
-  return (data && data.length) ? data.map(bill => row(bill)).join("") : ""
+  const sortByDate_DecreasingOrder = (a,b) => {
+    const valueA = new Date(a.date)
+    const valueB = new Date(b.date)
+    return valueB - valueA
+  }
+
+  const rowGenerator = () => {
+    data.sort(sortByDate_DecreasingOrder);
+    return data.map((bill) => row(bill)).join("");
+  };
+
+  return data && data.length ? rowGenerator(data) : "";
 }
 
 export default ({ data: bills, loading, error }) => {
