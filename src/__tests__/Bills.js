@@ -35,18 +35,18 @@ describe("Given I am connected as an employee", () => {
     let onNavigate;
     let container;
     beforeEach(() => {
-        onNavigate = (pathname) => {
-        document.body.innerHTML = ROUTES({ pathname })
-    }
+      onNavigate = (pathname) => {document.body.innerHTML = ROUTES({ pathname })}
 
-       Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-       window.localStorage.setItem('user', JSON.stringify({type: 'Employee'}))
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({type: 'Employee'}))
+      
+      document.body.innerHTML = BillsUI({ data: bills });
 
-       container = new Bills({
+      container = new Bills({
         document,
         onNavigate,
         firestore,
-        localStorage,
+        localStorage: window.localStorage,
       })
     })
 
@@ -85,24 +85,32 @@ describe("Given I am connected as an employee", () => {
     describe("When I click on the 'Eye' Icon of a bill", () => {
       test("Then the bill should be shown in a modal", () => {
         document.body.innerHTML = BillsUI({ data: bills });
-        const eyeIcon_btn = screen.getAllByTestId("icon-eye")[0];
-        //const eyeIcon_btn = eyeIcon_btnList[0];
+        $.fn.modal = jest.fn();
+        const container = new Bills({
+          document,
+          onNavigate,
+          firestore,
+          localStorage: window.localStorage,
+        });
 
-        onNavigate = jest.fn();
-        const modaleTrigger = jest.fn(container.handleClickIconEye);
+        const iconEyeList = screen.getAllByTestId("icon-eye");
+        const iconEyeBtn = iconEyeList[0];
 
-        eyeIcon_btn.addEventListener("click", modaleTrigger(eyeIcon_btn));
-        userEvent.click(eyeIcon_btn);
-        expect(modaleTrigger).toHaveBeenCalled();
-
+        const modalTrigger = jest.fn(container.handleClickIconEye);
+        iconEyeBtn.addEventListener("click", () => {modalTrigger(iconEyeBtn);});
+        
+        userEvent.click(iconEyeBtn);
+        expect(modalTrigger).toHaveBeenCalled();
+        expect($.fn.modal).toHaveBeenCalledWith("show");
+  
         const modal = screen.getByTestId("modaleFile");
         expect(modal).toBeTruthy();
-
-        const modalImageUrl = eyeIcon_btn.getAttribute("data-bill-url").split("?")[0];
-        expect(modal.innerHTML.includes(modalImageUrl)).toBeTruthy();
         
         const modalTitle = screen.getByText("Fee");
         expect(modalTitle).toBeTruthy();
+
+        const modalImageUrl = iconEyeBtn.getAttribute("data-bill-url").split("?")[0];
+        expect(modal.innerHTML.includes(modalImageUrl)).toBeTruthy();
       })
     })
   })
