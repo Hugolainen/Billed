@@ -1,9 +1,10 @@
 import { screen } from "@testing-library/dom"
 import userEvent from "@testing-library/user-event";
-import { ROUTES, ROUTES_PATH } from "../constants/routes";
+import { ROUTES } from "../constants/routes";
 
 import { bills } from "../fixtures/bills.js"
 import { localStorageMock } from "../__mocks__/localStorage"
+import firebase from "../__mocks__/firebase"
 
 import firestore from '../app/Firestore'
 
@@ -111,6 +112,39 @@ describe("Given I am connected as an employee", () => {
 
         const modalImageUrl = iconEyeBtn.getAttribute("data-bill-url").split("?")[0];
         expect(modal.innerHTML.includes(modalImageUrl)).toBeTruthy();
+      })
+    })
+  })
+})
+
+// Integration tests
+describe("Given I am a user connected as Employee", () => {
+  describe("When BillsUI is called", () => {
+    test("Then the bills should be fetched from API", async () => {
+      const getSpy = jest.spyOn(firebase, "get");
+      const bills = await firebase.get();
+      expect(getSpy).toHaveBeenCalledTimes(1);
+      expect(bills.data.length).toBe(4);
+    })
+    describe("When the API fails with a 404 error message", () => {
+      test("Then a 404 error message should be displayed", async () => {
+        firebase.get.mockImplementationOnce(() => {
+          Promise.reject(new Error("Error 404"));
+        });
+        document.body.innerHTML = BillsUI({ error: "Error 404" });
+        const message = await screen.getByText(/Error 404/);
+        expect(message).toBeTruthy();
+      })
+    })
+
+    describe("When the API fails with a 500 error message", () => {
+      test("Then a 500 error message should be displayed", async () => {
+        firebase.get.mockImplementationOnce(() =>
+          Promise.reject(new Error("Error 500"))
+        );
+        document.body.innerHTML = BillsUI({ error: "Error 500" });
+        const message = await screen.getByText(/Error 500/);
+        expect(message).toBeTruthy();
       })
     })
   })
