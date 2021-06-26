@@ -1,49 +1,78 @@
 import { screen, fireEvent  } from "@testing-library/dom"
-import { ROUTES, ROUTES_PATH } from "../constants/routes";
+import userEvent from "@testing-library/user-event"
+import { ROUTES } from "../constants/routes"
 
 import { localStorageMock } from "../__mocks__/localStorage"
 import firebase from '../__mocks__/firebase';
+import Firestore from '../app/Firestore';
 
 import NewBillUI from "../views/NewBillUI.js"
 import NewBill from "../containers/NewBill.js"
 import BillsUI from "../views/BillsUI.js"
 
+const containerInit = () => {
+  document.body.innerHTML = NewBillUI(); 
+  const onNavigate = (pathname) => { document.body.innerHTML = ROUTES({ pathname }) };
+  Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+  window.localStorage.setItem('user', JSON.stringify({ type: 'Employee' }));
+  
+  return new NewBill({
+    document,
+    onNavigate,
+    firestore: false,
+    localStorage: window.localStorage,
+  });
+}
+
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
-    let onNavigate;
-    let container;
-    beforeEach(() => {
-      document.body.innerHTML = NewBillUI(); 
-  
-      onNavigate = (pathname) => {document.body.innerHTML = ROUTES({ pathname })}
-  
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem('user', JSON.stringify({type: 'Employee'}))
-  
-      container = new NewBill({
-        document,
-        onNavigate,
-        firestore: false,
-        localStorage,
-      })
-    })
-
     describe("When I add a file in the Fee input", () => {
       test("Then only files with .png, .jpg and .jpeg should be accepted", () => {
-        // const fileInput = screen.getByTestId('file');
+        const container = containerInit();
+        const errMessage = screen.getByTestId('fileInput-error-message');
+        let testFile;
 
-        // const handleChangeFile = jest.fn(screen.handleChangeFile);
-        // fileInput.addEventListener('change', handleChangeFile);
-        
-        // const png = new File(["test"], "test.png", { type: "image/png" });
-        // fireEvent.change(fileInput, { target: { file: png } });
+        const inputFile = screen.getByTestId('file');
+        const handleChangeFile = jest.fn(container.handleChangeFile);
+        inputFile.addEventListener('change', handleChangeFile);
 
-        // expect(handleChangeFile).toHaveBeenCalled();
-        // expect(fileInput.file.name).toBe('test.png');
+        // png
+        testFile = new File(['(⌐□_□)'], 'test.png', { type: 'image/png' });
+        fireEvent.change(inputFile, { target: { files: [testFile]} });
+        userEvent.upload(inputFile, testFile);
+        expect(handleChangeFile).toHaveBeenCalled();
+        expect(inputFile.files[0]).toStrictEqual(testFile);
+        expect(errMessage.classList.length).toEqual(2);
+        expect(errMessage.classList[1]).toEqual('fileInput-error-message--hide');
+
+        // jpg
+        testFile = new File(['(⌐□_□)'], 'test.jpg', { type: 'image/jpg' });
+        fireEvent.change(inputFile, { target: { files: [testFile]} });
+        userEvent.upload(inputFile, testFile);
+        expect(handleChangeFile).toHaveBeenCalled();
+        expect(inputFile.files[0]).toStrictEqual(testFile);
+        expect(errMessage.classList.length).toEqual(2);
+        expect(errMessage.classList[1]).toEqual('fileInput-error-message--hide');
+
+        // jpeg
+        testFile = new File(['(⌐□_□)'], 'test.jpeg', { type: 'image/jpeg' });
+        fireEvent.change(inputFile, { target: { files: [testFile]} });
+        userEvent.upload(inputFile, testFile);
+        expect(handleChangeFile).toHaveBeenCalled();
+        expect(inputFile.files[0]).toStrictEqual(testFile);
+        expect(errMessage.classList.length).toEqual(2);
+        expect(errMessage.classList[1]).toEqual('fileInput-error-message--hide');
+
+        // error
+        testFile = new File(['(⌐□_□)'], 'test.gif', { type: 'image/gif' });
+        fireEvent.change(inputFile, { target: { files: [testFile]} });
+        userEvent.upload(inputFile, testFile);
+        expect(handleChangeFile).toHaveBeenCalled();
+        expect(inputFile.files[0]).toStrictEqual(testFile);
+        expect(errMessage.classList.length).toEqual(1);
       })
     })
-    
-    
+
     describe("When I completed the form and click on submit button", () => {
       test("Then a new bill should be created and billsUI loaded", () => {
 

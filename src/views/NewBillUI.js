@@ -56,6 +56,7 @@ export default () => {
                   <div class="col-half">
                     <label for="file" class="bold-label">Fee</label>
                     <input required type="file" class="form-control blue-border" data-testid="file" />
+                    <p class="fileInput-error-message fileInput-error-message--hide" data-testid="fileInput-error-message"> Err: unsuported file extension uploaded </p>
                   </div>
                 </div>
             </div>

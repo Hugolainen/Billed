@@ -52,8 +52,7 @@ describe("Given I am connected as an employee", () => {
     })
 
     test("Then bill icon in vertical layout should be highlighted", () => {
-      const html = BillsUI({ data: bills})
-      document.body.innerHTML = html
+      document.body.innerHTML = BillsUI({ data: bills});
       expect(screen.getByTestId("icon-window").classList.contains("active-icon")).toBeTruthy;
     })
       
@@ -80,6 +79,7 @@ describe("Given I am connected as an employee", () => {
         expect(formTrigger).toHaveBeenCalled();
         expect(screen.getAllByText("Send a fee")).toBeTruthy();
         expect(screen.getByTestId("form-new-bill") !== undefined).toBeTruthy();
+        expect(screen.getByTestId("icon-mail").classList.contains("active-icon")).toBeTruthy;
       })
     })
 
@@ -117,7 +117,7 @@ describe("Given I am connected as an employee", () => {
   })
 })
 
-// Integration tests
+// Integration tests of the data (bills) fetching (API GET call)
 describe("Given I am a user connected as Employee", () => {
   describe("When BillsUI is called", () => {
     test("Then the bills should be fetched from API", async () => {

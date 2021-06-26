@@ -61,3 +61,12 @@ textarea:focus, input:focus, select:focus {
 *[placeholder] {
   color: #0E5AE5 !important;
 }
+
+.fileInput-error-message{
+  color:red;
+  font-size: 15px;
+}
+
+.fileInput-error-message--hide{
+  display: none;
+}

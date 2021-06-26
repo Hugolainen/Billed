@@ -16,22 +16,27 @@ export default class NewBill {
     new Logout({ document, localStorage, onNavigate })
   }
   handleChangeFile = e => {
+    const errorMessage = document.querySelector('[data-testid="fileInput-error-message"]');
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
     const imgType = file.type;
     if(imgType === "image/png" || imgType === "image/jpg" || imgType === "image/jpeg"){
+      errorMessage.classList.add("fileInput-error-message--hide");
       const filePath = e.target.value.split(/\\/g)
       const fileName = filePath[filePath.length-1]
-      this.firestore
-        .storage
-        .ref(`justificatifs/${fileName}`)
-        .put(file)
-        .then(snapshot => snapshot.ref.getDownloadURL())
-        .then(url => {
-          this.fileUrl = url
-          this.fileName = fileName
+      if(this.firestore) {
+        this.firestore
+          .storage
+          .ref(`justificatifs/${fileName}`)
+          .put(file)
+          .then(snapshot => snapshot.ref.getDownloadURL())
+          .then(url => {
+            this.fileUrl = url
+            this.fileName = fileName
         })
+      }
     }
     else{
+      errorMessage.classList.remove("fileInput-error-message--hide");
       e.target.value = "";
       console.log("NewBill: err - img type");
     }
