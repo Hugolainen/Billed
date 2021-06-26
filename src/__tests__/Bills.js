@@ -87,12 +87,6 @@ describe("Given I am connected as an employee", () => {
       test("Then the bill should be shown in a modal", () => {
         document.body.innerHTML = BillsUI({ data: bills });
         $.fn.modal = jest.fn();
-        const container = new Bills({
-          document,
-          onNavigate,
-          firestore,
-          localStorage: window.localStorage,
-        });
 
         const iconEyeList = screen.getAllByTestId("icon-eye");
         const iconEyeBtn = iconEyeList[0];
@@ -121,9 +115,9 @@ describe("Given I am connected as an employee", () => {
 describe("Given I am a user connected as Employee", () => {
   describe("When BillsUI is called", () => {
     test("Then the bills should be fetched from API", async () => {
-      const getSpy = jest.spyOn(firebase, "get");
+      const spy = jest.spyOn(firebase, "get");
       const bills = await firebase.get();
-      expect(getSpy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledTimes(1);
       expect(bills.data.length).toBe(4);
     })
     describe("When the API fails with a 404 error message", () => {

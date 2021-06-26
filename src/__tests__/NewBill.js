@@ -4,31 +4,31 @@ import { ROUTES } from "../constants/routes"
 
 import { localStorageMock } from "../__mocks__/localStorage"
 import firebase from '../__mocks__/firebase';
-import Firestore from '../app/Firestore';
 
 import NewBillUI from "../views/NewBillUI.js"
 import NewBill from "../containers/NewBill.js"
 import BillsUI from "../views/BillsUI.js"
 
-const containerInit = () => {
-  document.body.innerHTML = NewBillUI(); 
-  const onNavigate = (pathname) => { document.body.innerHTML = ROUTES({ pathname }) };
-  Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-  window.localStorage.setItem('user', JSON.stringify({ type: 'Employee' }));
-  
-  return new NewBill({
-    document,
-    onNavigate,
-    firestore: false,
-    localStorage: window.localStorage,
-  });
-}
-
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
+    let onNavigate;
+    let container;
+    beforeEach(() => {
+      document.body.innerHTML = NewBillUI(); 
+      onNavigate = (pathname) => { document.body.innerHTML = ROUTES({ pathname }) };
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+      window.localStorage.setItem('user', JSON.stringify({ type: 'Employee' }));
+      
+      container = new NewBill({
+        document,
+        onNavigate,
+        firestore: false,
+        localStorage: window.localStorage,
+      });
+    })
+
     describe("When I add a file in the Fee input", () => {
       test("Then only files with .png, .jpg and .jpeg should be accepted", () => {
-        const container = containerInit();
         const errMessage = screen.getByTestId('fileInput-error-message');
         let testFile;
 
@@ -73,10 +73,23 @@ describe("Given I am connected as an employee", () => {
       })
     })
 
-    describe("When I completed the form and click on submit button", () => {
+    describe("When the form is not completed and I click on submit button", () => {
       test("Then a new bill should be created and billsUI loaded", () => {
+        const newBillForm = screen.getByTestId("form-new-bill");
+        
+        const handleSubmit = jest.fn(container.handleSubmit);
+        newBillForm.addEventListener("submit", handleSubmit);
+        fireEvent.submit(newBillForm);
 
+        expect(handleSubmit).toHaveBeenCalled();
+        expect(screen.getAllByText("My fees")).toBeTruthy();
       })
     })
+  })
+})
+
+describe("Given I am connected as an employee", () => {
+  describe("When I am on NewBill Page", () => {
+    
   })
 })
