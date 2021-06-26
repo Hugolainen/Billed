@@ -108,37 +108,43 @@ describe("Given I am connected as an employee", () => {
         expect(modal.innerHTML.includes(modalImageUrl)).toBeTruthy();
       })
     })
-  })
-})
 
-// Integration tests of the data (bills) fetching (API GET call)
-describe("Given I am a user connected as Employee", () => {
-  describe("When BillsUI is called", () => {
+    // Integration tests of the data (bills) fetching (API GET call)
+    const getRequest = jest
+    .fn(firebase.get)
+    .mockImplementationOnce(() => Promise.reject(new Error('Erreur 404')))
+    .mockImplementationOnce(() => Promise.reject(new Error('Erreur 500')))
+
     test("Then the bills should be fetched from API", async () => {
       const spy = jest.spyOn(firebase, "get");
       const bills = await firebase.get();
       expect(spy).toHaveBeenCalledTimes(1);
       expect(bills.data.length).toBe(4);
     })
+
     describe("When the API call fails with a 404 error message", () => {
       test("Then a 404 error message should be displayed", async () => {
-        firebase.get.mockImplementationOnce(() => {
-          Promise.reject(new Error("Error 404"));
-        })
-        document.body.innerHTML = BillsUI({ error: "Error 404" });
-        const message = await screen.getByText(/Error 404/);
-        expect(message).toBeTruthy();
+        let response;
+        try {
+          response = await getRequest()
+        } catch (err) {
+          response = {error: err}
+        }
+        document.body.innerHTML = BillsUI(response)
+        expect(screen.getByText(/Erreur 404/)).toBeTruthy()
       })
     })
 
     describe("When the API call fails with a 500 error message", () => {
       test("Then a 500 error message should be displayed", async () => {
-        firebase.get.mockImplementationOnce(() =>
-          Promise.reject(new Error("Error 500"))
-        )
-        document.body.innerHTML = BillsUI({ error: "Error 500" });
-        const message = await screen.getByText(/Error 500/);
-        expect(message).toBeTruthy();
+        let response;
+        try {
+          response = await getRequest()
+        } catch (err) {
+          response = {error: err}
+        }
+        document.body.innerHTML = BillsUI(response)
+        expect(screen.getByText(/Erreur 500/)).toBeTruthy()
       })
     })
   })
