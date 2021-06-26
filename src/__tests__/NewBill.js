@@ -28,6 +28,10 @@ describe("Given I am connected as an employee", () => {
       });
     })
 
+    test("Then I should see the new bill form", () => {
+      expect(screen.getByTestId('form-new-bill')).toBeTruthy()
+    })
+
     describe("When I add a file in the Fee input", () => {
       test("Then only files with .png, .jpg and .jpeg should be accepted", () => {
         const errMessage = screen.getByTestId('fileInput-error-message');
@@ -74,8 +78,8 @@ describe("Given I am connected as an employee", () => {
       })
     })
 
-    describe("When the form is not completed and I click on submit button", () => {
-      test("Then a new bill should be created and billsUI loaded", () => {
+    describe("When I click on submit button", () => {
+      test("Then the billsUI page should loaded", () => {
         const newBillForm = screen.getByTestId("form-new-bill");
         
         const handleSubmit = jest.fn(container.handleSubmit);
@@ -86,39 +90,46 @@ describe("Given I am connected as an employee", () => {
         expect(screen.getAllByText("My fees")).toBeTruthy();
       })
     })
-  })
-})
 
-// Integration tests of the data (newBill) posting (API POST call)
-describe("Given I am connected as an employee", () => {
-  describe("When I am on NewBill Page", () => {
+    // Integration tests of the data (newBill) posting (API POST call)
+    const testBill = bills.pop();
+    const postRequest = jest
+    .fn(firebase.post)
+    .mockImplementationOnce(() => Promise.reject(new Error('Erreur 404')))
+    .mockImplementationOnce(() => Promise.reject(new Error('Erreur 500')))
+
     describe("When I submit a new bill", () => {
       test("Then the newBill should be posted", async () => {
         const spy = jest.spyOn(firebase, "post");
-        const testBill = bills.pop();
         const response = await firebase.post(testBill);
         expect(spy).toHaveBeenCalledTimes(1);
         expect(response.data.length).toBe(5);
+        expect(response.data.pop().id).toBe(testBill.id)
       })
+      
       describe("When the API call fails with a 404 error message", () => {
         test("Then a 404 error message should be displayed", async () => {
-          firebase.post.mockImplementationOnce(() => {
-            Promise.reject(new Error("Error 404"));
-          })
-          document.body.innerHTML = BillsUI({ error: 'Erreur 404' });
-          const message = await screen.getByText(/Erreur 404/);
-          expect(message).toBeTruthy();
+          let response;
+          try {
+            response = await postRequest(testBill)
+          } catch (err){
+            response = {error: err}
+          }
+          document.body.innerHTML = BillsUI(response);
+          expect(screen.getByText(/Erreur 404/)).toBeTruthy();
         })
       })
 
       describe("When the API call fails with a 500 error message", () => {
         test("Then a 500 error message should be displayed", async () => {
-          firebase.post.mockImplementationOnce(() => {
-            Promise.reject(new Error("Error 500"));
-          })
-          document.body.innerHTML = BillsUI({ error: 'Erreur 500' });
-          const message = await screen.getByText(/Erreur 500/);
-          expect(message).toBeTruthy();
+          let response;
+          try {
+            response = await postRequest(testBill)
+          } catch (err){
+            response = {error: err}
+          }
+          document.body.innerHTML = BillsUI(response);
+          expect(screen.getByText(/Erreur 500/)).toBeTruthy();
         })
       })
     })
