@@ -88,9 +88,7 @@ describe("Given I am connected as an employee", () => {
         document.body.innerHTML = BillsUI({ data: bills });
         $.fn.modal = jest.fn();
 
-        const iconEyeList = screen.getAllByTestId("icon-eye");
-        const iconEyeBtn = iconEyeList[0];
-
+        const iconEyeBtn = screen.getAllByTestId("icon-eye")[0];
         const modalTrigger = jest.fn(container.handleClickIconEye);
         iconEyeBtn.addEventListener("click", () => {modalTrigger(iconEyeBtn);});
         
