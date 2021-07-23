@@ -10,3 +10,4 @@ Objectives:
 * Writing a manual E2E test plan
 * Integration testing
 * Unit testing
+  - Jest
